@@ -1,0 +1,7 @@
+Batteriebetrieb
+Audio-Ausgang (Samples abspielen)
+LED Blinken
+Gabellichtschranke für Geld
+Schaltausgänge
+Lipo/Charger
+

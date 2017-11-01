@@ -1,0 +1,222 @@
+
+tipjar.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000000ec  00000000  00000000  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  000000ec  00000160  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .comment      00000011  00000000  00000000  00000160  2**0
+                  CONTENTS, READONLY
+  3 .debug_aranges 00000048  00000000  00000000  00000178  2**3
+                  CONTENTS, READONLY, DEBUGGING
+  4 .debug_info   0000073b  00000000  00000000  000001c0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_abbrev 00000509  00000000  00000000  000008fb  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_line   00000180  00000000  00000000  00000e04  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_frame  00000034  00000000  00000000  00000f84  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_str    0000029b  00000000  00000000  00000fb8  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_loc    0000021a  00000000  00000000  00001253  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_ranges 00000018  00000000  00000000  0000146d  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0e c0       	rjmp	.+28     	; 0x1e <__ctors_end>
+   2:	15 c0       	rjmp	.+42     	; 0x2e <__bad_interrupt>
+   4:	14 c0       	rjmp	.+40     	; 0x2e <__bad_interrupt>
+   6:	13 c0       	rjmp	.+38     	; 0x2e <__bad_interrupt>
+   8:	12 c0       	rjmp	.+36     	; 0x2e <__bad_interrupt>
+   a:	11 c0       	rjmp	.+34     	; 0x2e <__bad_interrupt>
+   c:	10 c0       	rjmp	.+32     	; 0x2e <__bad_interrupt>
+   e:	0f c0       	rjmp	.+30     	; 0x2e <__bad_interrupt>
+  10:	0e c0       	rjmp	.+28     	; 0x2e <__bad_interrupt>
+  12:	0d c0       	rjmp	.+26     	; 0x2e <__bad_interrupt>
+  14:	0c c0       	rjmp	.+24     	; 0x2e <__bad_interrupt>
+  16:	0b c0       	rjmp	.+22     	; 0x2e <__bad_interrupt>
+  18:	0a c0       	rjmp	.+20     	; 0x2e <__bad_interrupt>
+  1a:	09 c0       	rjmp	.+18     	; 0x2e <__bad_interrupt>
+  1c:	08 c0       	rjmp	.+16     	; 0x2e <__bad_interrupt>
+
+0000001e <__ctors_end>:
+  1e:	11 24       	eor	r1, r1
+  20:	1f be       	out	0x3f, r1	; 63
+  22:	cf e5       	ldi	r28, 0x5F	; 95
+  24:	d2 e0       	ldi	r29, 0x02	; 2
+  26:	de bf       	out	0x3e, r29	; 62
+  28:	cd bf       	out	0x3d, r28	; 61
+  2a:	0b d0       	rcall	.+22     	; 0x42 <main>
+  2c:	5d c0       	rjmp	.+186    	; 0xe8 <_exit>
+
+0000002e <__bad_interrupt>:
+  2e:	e8 cf       	rjmp	.-48     	; 0x0 <__vectors>
+
+00000030 <init>:
+	}
+}
+
+void init(void) {
+	// set the direction of the ports
+	DDRB set(LED);		// red LED OUT
+  30:	ba 9a       	sbi	0x17, 2	; 23
+	DDRB set(SND1);		// sound module 1 OUT
+  32:	b8 9a       	sbi	0x17, 0	; 23
+	DDRB set(IRLED);	// infrared sensor LEDs OUT
+  34:	bc 9a       	sbi	0x17, 4	; 23
+	DDRB clr(PHOTR);	// phototransistor IN
+  36:	bb 98       	cbi	0x17, 3	; 23
+	PORTB set(PHOTR);	// enable pullup resistor
+  38:	c3 9a       	sbi	0x18, 3	; 24
+
+	CLKPR = (1 << CLKPCE);	// enable clock prescaler update
+  3a:	80 e8       	ldi	r24, 0x80	; 128
+  3c:	86 bd       	out	0x26, r24	; 38
+	CLKPR = 0;		// set clock to maximum (= crystal/RC oscillator)
+  3e:	16 bc       	out	0x26, r1	; 38
+  40:	08 95       	ret
+
+00000042 <main>:
+void init(void);
+
+void main(void) {
+	int pintr, sound=0;
+	
+	init();
+  42:	f6 df       	rcall	.-20     	; 0x30 <init>
+#define IRLED	PB4
+
+void init(void);
+
+void main(void) {
+	int pintr, sound=0;
+  44:	80 e0       	ldi	r24, 0x00	; 0
+  46:	90 e0       	ldi	r25, 0x00	; 0
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+  48:	ef e2       	ldi	r30, 0x2F	; 47
+  4a:	f5 e7       	ldi	r31, 0x75	; 117
+  4c:	31 97       	sbiw	r30, 0x01	; 1
+  4e:	f1 f7       	brne	.-4      	; 0x4c <main+0xa>
+  50:	00 c0       	rjmp	.+0      	; 0x52 <main+0x10>
+  52:	00 00       	nop
+	
+	init();
+
+	for(;;) {				// endless loop
+		_delay_ms(15);
+		PORTB set(IRLED);		// switch on IR LEDs
+  54:	c4 9a       	sbi	0x18, 4	; 24
+  56:	ef e9       	ldi	r30, 0x9F	; 159
+  58:	ff e0       	ldi	r31, 0x0F	; 15
+  5a:	31 97       	sbiw	r30, 0x01	; 1
+  5c:	f1 f7       	brne	.-4      	; 0x5a <main+0x18>
+  5e:	00 c0       	rjmp	.+0      	; 0x60 <main+0x1e>
+  60:	00 00       	nop
+		_delay_ms(2);			// wait for IR to settle
+		pintr = ! (PINB & (1<<PHOTR));	// read the photo interrupter
+  62:	26 b3       	in	r18, 0x16	; 22
+		PORTB clr(IRLED);		// switch off IR LEDs
+  64:	c4 98       	cbi	0x18, 4	; 24
+		if (pintr) {
+  66:	23 fd       	sbrc	r18, 3
+  68:	19 c0       	rjmp	.+50     	; 0x9c <main+0x5a>
+			++sound;
+  6a:	01 96       	adiw	r24, 0x01	; 1
+			if ( sound >= 4 ) {	// long sound sample
+  6c:	84 30       	cpi	r24, 0x04	; 4
+  6e:	91 05       	cpc	r25, r1
+  70:	bc f1       	brlt	.+110    	; 0xe0 <main+0x9e>
+				sound=0;
+				PORTB set(SND1);
+  72:	c0 9a       	sbi	0x18, 0	; 24
+  74:	ff ef       	ldi	r31, 0xFF	; 255
+  76:	20 e7       	ldi	r18, 0x70	; 112
+  78:	82 e0       	ldi	r24, 0x02	; 2
+  7a:	f1 50       	subi	r31, 0x01	; 1
+  7c:	20 40       	sbci	r18, 0x00	; 0
+  7e:	80 40       	sbci	r24, 0x00	; 0
+  80:	e1 f7       	brne	.-8      	; 0x7a <main+0x38>
+  82:	00 c0       	rjmp	.+0      	; 0x84 <main+0x42>
+  84:	00 00       	nop
+				_delay_ms(100);
+				PORTB clr(SND1);
+  86:	c0 98       	cbi	0x18, 0	; 24
+  88:	9f ef       	ldi	r25, 0xFF	; 255
+  8a:	e7 ea       	ldi	r30, 0xA7	; 167
+  8c:	f1 e6       	ldi	r31, 0x61	; 97
+  8e:	91 50       	subi	r25, 0x01	; 1
+  90:	e0 40       	sbci	r30, 0x00	; 0
+  92:	f0 40       	sbci	r31, 0x00	; 0
+  94:	e1 f7       	brne	.-8      	; 0x8e <main+0x4c>
+  96:	00 c0       	rjmp	.+0      	; 0x98 <main+0x56>
+  98:	00 00       	nop
+  9a:	24 c0       	rjmp	.+72     	; 0xe4 <main+0xa2>
+				_delay_ms(4000);
+			}
+		}
+		else if (sound) {		// short sound sample
+  9c:	89 2b       	or	r24, r25
+  9e:	11 f1       	breq	.+68     	; 0xe4 <main+0xa2>
+			sound=0;
+			PORTB set(SND1);
+  a0:	c0 9a       	sbi	0x18, 0	; 24
+  a2:	2f ef       	ldi	r18, 0xFF	; 255
+  a4:	80 e7       	ldi	r24, 0x70	; 112
+  a6:	92 e0       	ldi	r25, 0x02	; 2
+  a8:	21 50       	subi	r18, 0x01	; 1
+  aa:	80 40       	sbci	r24, 0x00	; 0
+  ac:	90 40       	sbci	r25, 0x00	; 0
+  ae:	e1 f7       	brne	.-8      	; 0xa8 <main+0x66>
+  b0:	00 c0       	rjmp	.+0      	; 0xb2 <main+0x70>
+  b2:	00 00       	nop
+			_delay_ms(100);
+			PORTB clr(SND1);
+  b4:	c0 98       	cbi	0x18, 0	; 24
+  b6:	ef ef       	ldi	r30, 0xFF	; 255
+  b8:	fa ed       	ldi	r31, 0xDA	; 218
+  ba:	2a e1       	ldi	r18, 0x1A	; 26
+  bc:	e1 50       	subi	r30, 0x01	; 1
+  be:	f0 40       	sbci	r31, 0x00	; 0
+  c0:	20 40       	sbci	r18, 0x00	; 0
+  c2:	e1 f7       	brne	.-8      	; 0xbc <main+0x7a>
+  c4:	00 c0       	rjmp	.+0      	; 0xc6 <main+0x84>
+  c6:	00 00       	nop
+			_delay_ms(1100);
+			PORTB set(SND1);
+  c8:	c0 9a       	sbi	0x18, 0	; 24
+  ca:	8f ef       	ldi	r24, 0xFF	; 255
+  cc:	90 e7       	ldi	r25, 0x70	; 112
+  ce:	e2 e0       	ldi	r30, 0x02	; 2
+  d0:	81 50       	subi	r24, 0x01	; 1
+  d2:	90 40       	sbci	r25, 0x00	; 0
+  d4:	e0 40       	sbci	r30, 0x00	; 0
+  d6:	e1 f7       	brne	.-8      	; 0xd0 <main+0x8e>
+  d8:	00 c0       	rjmp	.+0      	; 0xda <main+0x98>
+  da:	00 00       	nop
+			_delay_ms(100);
+			PORTB clr(SND1);
+  dc:	c0 98       	cbi	0x18, 0	; 24
+  de:	02 c0       	rjmp	.+4      	; 0xe4 <main+0xa2>
+		}
+		if (sound) PORTB clr(LED); else PORTB set(LED);
+  e0:	c2 98       	cbi	0x18, 2	; 24
+  e2:	b2 cf       	rjmp	.-156    	; 0x48 <main+0x6>
+  e4:	c2 9a       	sbi	0x18, 2	; 24
+  e6:	ae cf       	rjmp	.-164    	; 0x44 <main+0x2>
+
+000000e8 <_exit>:
+  e8:	f8 94       	cli
+
+000000ea <__stop_program>:
+  ea:	ff cf       	rjmp	.-2      	; 0xea <__stop_program>

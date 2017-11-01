@@ -1,0 +1,478 @@
+   1               		.file	"tipjar.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               	.global	init
+  12               	init:
+  13               	.LFB7:
+  14               		.file 1 "tipjar.c"
+   1:tipjar.c      **** /* The RepairCafe TipJar, Copyright (c)2017 Peter Franck
+   2:tipjar.c      ****  * 
+   3:tipjar.c      ****  * This program is free software: you can redistribute it and/or modify
+   4:tipjar.c      ****  * it under the terms of the GNU General Public License as published by
+   5:tipjar.c      ****  * the Free Software Foundation, either version 3 of the License, or
+   6:tipjar.c      ****  * (at your option) any later version.
+   7:tipjar.c      ****  * 
+   8:tipjar.c      ****  * This program is distributed in the hope that it will be useful,
+   9:tipjar.c      ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  10:tipjar.c      ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  11:tipjar.c      ****  * GNU General Public License for more details.
+  12:tipjar.c      ****  * You should have received a copy of the GNU General Public License
+  13:tipjar.c      ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  14:tipjar.c      ****  */
+  15:tipjar.c      **** 
+  16:tipjar.c      **** #define F_CPU	8000000UL
+  17:tipjar.c      **** #include <avr/io.h>
+  18:tipjar.c      **** #include <util/delay.h>
+  19:tipjar.c      **** #include <avr/interrupt.h>
+  20:tipjar.c      **** 
+  21:tipjar.c      **** #define set(x) |= (1<<x)
+  22:tipjar.c      **** #define clr(x) &=~(1<<x)
+  23:tipjar.c      **** #define inv(x) ^=(1<<x)
+  24:tipjar.c      **** 
+  25:tipjar.c      **** /* port B pin definitions */
+  26:tipjar.c      **** #define SND1	PB0
+  27:tipjar.c      **** #define LED	PB2
+  28:tipjar.c      **** #define PHOTR	PB3
+  29:tipjar.c      **** #define IRLED	PB4
+  30:tipjar.c      **** 
+  31:tipjar.c      **** void init(void);
+  32:tipjar.c      **** 
+  33:tipjar.c      **** void main(void) {
+  34:tipjar.c      **** 	int pintr, sound=0;
+  35:tipjar.c      **** 	
+  36:tipjar.c      **** 	init();
+  37:tipjar.c      **** 
+  38:tipjar.c      **** 	for(;;) {				// endless loop
+  39:tipjar.c      **** 		_delay_ms(15);
+  40:tipjar.c      **** 		PORTB set(IRLED);		// switch on IR LEDs
+  41:tipjar.c      **** 		_delay_ms(2);			// wait for IR to settle
+  42:tipjar.c      **** 		pintr = ! (PINB & (1<<PHOTR));	// read the photo interrupter
+  43:tipjar.c      **** 		PORTB clr(IRLED);		// switch off IR LEDs
+  44:tipjar.c      **** 		if (pintr) {
+  45:tipjar.c      **** 			++sound;
+  46:tipjar.c      **** 			if ( sound >= 4 ) {	// long sound sample
+  47:tipjar.c      **** 				sound=0;
+  48:tipjar.c      **** 				PORTB set(SND1);
+  49:tipjar.c      **** 				_delay_ms(100);
+  50:tipjar.c      **** 				PORTB clr(SND1);
+  51:tipjar.c      **** 				_delay_ms(4000);
+  52:tipjar.c      **** 			}
+  53:tipjar.c      **** 		}
+  54:tipjar.c      **** 		else if (sound) {		// short sound sample
+  55:tipjar.c      **** 			sound=0;
+  56:tipjar.c      **** 			PORTB set(SND1);
+  57:tipjar.c      **** 			_delay_ms(100);
+  58:tipjar.c      **** 			PORTB clr(SND1);
+  59:tipjar.c      **** 			_delay_ms(1100);
+  60:tipjar.c      **** 			PORTB set(SND1);
+  61:tipjar.c      **** 			_delay_ms(100);
+  62:tipjar.c      **** 			PORTB clr(SND1);
+  63:tipjar.c      **** 		}
+  64:tipjar.c      **** 		if (sound) PORTB clr(LED); else PORTB set(LED);
+  65:tipjar.c      **** 	}
+  66:tipjar.c      **** }
+  67:tipjar.c      **** 
+  68:tipjar.c      **** void init(void) {
+  15               		.loc 1 68 0
+  16               		.cfi_startproc
+  17               	/* prologue: function */
+  18               	/* frame size = 0 */
+  19               	/* stack size = 0 */
+  20               	.L__stack_usage = 0
+  69:tipjar.c      **** 	// set the direction of the ports
+  70:tipjar.c      **** 	DDRB set(LED);		// red LED OUT
+  21               		.loc 1 70 0
+  22 0000 BA9A      		sbi 0x17,2
+  71:tipjar.c      **** 	DDRB set(SND1);		// sound module 1 OUT
+  23               		.loc 1 71 0
+  24 0002 B89A      		sbi 0x17,0
+  72:tipjar.c      **** 	DDRB set(IRLED);	// infrared sensor LEDs OUT
+  25               		.loc 1 72 0
+  26 0004 BC9A      		sbi 0x17,4
+  73:tipjar.c      **** 	DDRB clr(PHOTR);	// phototransistor IN
+  27               		.loc 1 73 0
+  28 0006 BB98      		cbi 0x17,3
+  74:tipjar.c      **** 	PORTB set(PHOTR);	// enable pullup resistor
+  29               		.loc 1 74 0
+  30 0008 C39A      		sbi 0x18,3
+  75:tipjar.c      **** 
+  76:tipjar.c      **** 	CLKPR = (1 << CLKPCE);	// enable clock prescaler update
+  31               		.loc 1 76 0
+  32 000a 80E8      		ldi r24,lo8(-128)
+  33 000c 86BD      		out 0x26,r24
+  77:tipjar.c      **** 	CLKPR = 0;		// set clock to maximum (= crystal/RC oscillator)
+  34               		.loc 1 77 0
+  35 000e 16BC      		out 0x26,__zero_reg__
+  36 0010 0895      		ret
+  37               		.cfi_endproc
+  38               	.LFE7:
+  40               		.section	.text.startup,"ax",@progbits
+  41               	.global	main
+  43               	main:
+  44               	.LFB6:
+  33:tipjar.c      **** void main(void) {
+  45               		.loc 1 33 0
+  46               		.cfi_startproc
+  47               	/* prologue: function */
+  48               	/* frame size = 0 */
+  49               	/* stack size = 0 */
+  50               	.L__stack_usage = 0
+  51               	.LVL0:
+  36:tipjar.c      **** 	init();
+  52               		.loc 1 36 0
+  53 0000 00D0      		rcall init
+  54               	.LVL1:
+  55               	.L11:
+  34:tipjar.c      **** 	int pintr, sound=0;
+  56               		.loc 1 34 0
+  57 0002 80E0      		ldi r24,0
+  58 0004 90E0      		ldi r25,0
+  59               	.LVL2:
+  60               	.L3:
+  61               	.LBB16:
+  62               	.LBB17:
+  63               		.file 2 "/opt/cross/avr/avr/include/util/delay.h"
+   1:/opt/cross/avr/avr/include/util/delay.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:/opt/cross/avr/avr/include/util/delay.h ****    Copyright (c) 2004,2005,2007 Joerg Wunsch
+   3:/opt/cross/avr/avr/include/util/delay.h ****    Copyright (c) 2007  Florin-Viorel Petrov
+   4:/opt/cross/avr/avr/include/util/delay.h ****    All rights reserved.
+   5:/opt/cross/avr/avr/include/util/delay.h **** 
+   6:/opt/cross/avr/avr/include/util/delay.h ****    Redistribution and use in source and binary forms, with or without
+   7:/opt/cross/avr/avr/include/util/delay.h ****    modification, are permitted provided that the following conditions are met:
+   8:/opt/cross/avr/avr/include/util/delay.h **** 
+   9:/opt/cross/avr/avr/include/util/delay.h ****    * Redistributions of source code must retain the above copyright
+  10:/opt/cross/avr/avr/include/util/delay.h ****      notice, this list of conditions and the following disclaimer.
+  11:/opt/cross/avr/avr/include/util/delay.h **** 
+  12:/opt/cross/avr/avr/include/util/delay.h ****    * Redistributions in binary form must reproduce the above copyright
+  13:/opt/cross/avr/avr/include/util/delay.h ****      notice, this list of conditions and the following disclaimer in
+  14:/opt/cross/avr/avr/include/util/delay.h ****      the documentation and/or other materials provided with the
+  15:/opt/cross/avr/avr/include/util/delay.h ****      distribution.
+  16:/opt/cross/avr/avr/include/util/delay.h **** 
+  17:/opt/cross/avr/avr/include/util/delay.h ****    * Neither the name of the copyright holders nor the names of
+  18:/opt/cross/avr/avr/include/util/delay.h ****      contributors may be used to endorse or promote products derived
+  19:/opt/cross/avr/avr/include/util/delay.h ****      from this software without specific prior written permission.
+  20:/opt/cross/avr/avr/include/util/delay.h **** 
+  21:/opt/cross/avr/avr/include/util/delay.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  22:/opt/cross/avr/avr/include/util/delay.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  23:/opt/cross/avr/avr/include/util/delay.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  24:/opt/cross/avr/avr/include/util/delay.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  25:/opt/cross/avr/avr/include/util/delay.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  26:/opt/cross/avr/avr/include/util/delay.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  27:/opt/cross/avr/avr/include/util/delay.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  28:/opt/cross/avr/avr/include/util/delay.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  29:/opt/cross/avr/avr/include/util/delay.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  30:/opt/cross/avr/avr/include/util/delay.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  31:/opt/cross/avr/avr/include/util/delay.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  32:/opt/cross/avr/avr/include/util/delay.h **** 
+  33:/opt/cross/avr/avr/include/util/delay.h **** /* $Id: delay.h.in 2385 2013-05-03 13:14:20Z joerg_wunsch $ */
+  34:/opt/cross/avr/avr/include/util/delay.h **** 
+  35:/opt/cross/avr/avr/include/util/delay.h **** #ifndef _UTIL_DELAY_H_
+  36:/opt/cross/avr/avr/include/util/delay.h **** #define _UTIL_DELAY_H_ 1
+  37:/opt/cross/avr/avr/include/util/delay.h **** 
+  38:/opt/cross/avr/avr/include/util/delay.h **** #ifndef __HAS_DELAY_CYCLES
+  39:/opt/cross/avr/avr/include/util/delay.h **** #define __HAS_DELAY_CYCLES 1
+  40:/opt/cross/avr/avr/include/util/delay.h **** #endif
+  41:/opt/cross/avr/avr/include/util/delay.h **** 
+  42:/opt/cross/avr/avr/include/util/delay.h **** #include <inttypes.h>
+  43:/opt/cross/avr/avr/include/util/delay.h **** #include <util/delay_basic.h>
+  44:/opt/cross/avr/avr/include/util/delay.h **** #include <math.h>
+  45:/opt/cross/avr/avr/include/util/delay.h **** 
+  46:/opt/cross/avr/avr/include/util/delay.h **** /** \file */
+  47:/opt/cross/avr/avr/include/util/delay.h **** /** \defgroup util_delay <util/delay.h>: Convenience functions for busy-wait delay loops
+  48:/opt/cross/avr/avr/include/util/delay.h ****     \code
+  49:/opt/cross/avr/avr/include/util/delay.h ****     #define F_CPU 1000000UL  // 1 MHz
+  50:/opt/cross/avr/avr/include/util/delay.h ****     //#define F_CPU 14.7456E6
+  51:/opt/cross/avr/avr/include/util/delay.h ****     #include <util/delay.h>
+  52:/opt/cross/avr/avr/include/util/delay.h ****     \endcode
+  53:/opt/cross/avr/avr/include/util/delay.h **** 
+  54:/opt/cross/avr/avr/include/util/delay.h ****     \note As an alternative method, it is possible to pass the
+  55:/opt/cross/avr/avr/include/util/delay.h ****     F_CPU macro down to the compiler from the Makefile.
+  56:/opt/cross/avr/avr/include/util/delay.h ****     Obviously, in that case, no \c \#define statement should be
+  57:/opt/cross/avr/avr/include/util/delay.h ****     used.
+  58:/opt/cross/avr/avr/include/util/delay.h **** 
+  59:/opt/cross/avr/avr/include/util/delay.h ****     The functions in this header file are wrappers around the basic
+  60:/opt/cross/avr/avr/include/util/delay.h ****     busy-wait functions from <util/delay_basic.h>.  They are meant as
+  61:/opt/cross/avr/avr/include/util/delay.h ****     convenience functions where actual time values can be specified
+  62:/opt/cross/avr/avr/include/util/delay.h ****     rather than a number of cycles to wait for.  The idea behind is
+  63:/opt/cross/avr/avr/include/util/delay.h ****     that compile-time constant expressions will be eliminated by
+  64:/opt/cross/avr/avr/include/util/delay.h ****     compiler optimization so floating-point expressions can be used
+  65:/opt/cross/avr/avr/include/util/delay.h ****     to calculate the number of delay cycles needed based on the CPU
+  66:/opt/cross/avr/avr/include/util/delay.h ****     frequency passed by the macro F_CPU.
+  67:/opt/cross/avr/avr/include/util/delay.h **** 
+  68:/opt/cross/avr/avr/include/util/delay.h ****     \note In order for these functions to work as intended, compiler
+  69:/opt/cross/avr/avr/include/util/delay.h ****     optimizations <em>must</em> be enabled, and the delay time
+  70:/opt/cross/avr/avr/include/util/delay.h ****     <em>must</em> be an expression that is a known constant at
+  71:/opt/cross/avr/avr/include/util/delay.h ****     compile-time.  If these requirements are not met, the resulting
+  72:/opt/cross/avr/avr/include/util/delay.h ****     delay will be much longer (and basically unpredictable), and
+  73:/opt/cross/avr/avr/include/util/delay.h ****     applications that otherwise do not use floating-point calculations
+  74:/opt/cross/avr/avr/include/util/delay.h ****     will experience severe code bloat by the floating-point library
+  75:/opt/cross/avr/avr/include/util/delay.h ****     routines linked into the application.
+  76:/opt/cross/avr/avr/include/util/delay.h **** 
+  77:/opt/cross/avr/avr/include/util/delay.h ****     The functions available allow the specification of microsecond, and
+  78:/opt/cross/avr/avr/include/util/delay.h ****     millisecond delays directly, using the application-supplied macro
+  79:/opt/cross/avr/avr/include/util/delay.h ****     F_CPU as the CPU clock frequency (in Hertz).
+  80:/opt/cross/avr/avr/include/util/delay.h **** 
+  81:/opt/cross/avr/avr/include/util/delay.h **** */
+  82:/opt/cross/avr/avr/include/util/delay.h **** 
+  83:/opt/cross/avr/avr/include/util/delay.h **** #if !defined(__DOXYGEN__)
+  84:/opt/cross/avr/avr/include/util/delay.h **** static inline void _delay_us(double __us) __attribute__((always_inline));
+  85:/opt/cross/avr/avr/include/util/delay.h **** static inline void _delay_ms(double __ms) __attribute__((always_inline));
+  86:/opt/cross/avr/avr/include/util/delay.h **** #endif
+  87:/opt/cross/avr/avr/include/util/delay.h **** 
+  88:/opt/cross/avr/avr/include/util/delay.h **** #ifndef F_CPU
+  89:/opt/cross/avr/avr/include/util/delay.h **** /* prevent compiler error by supplying a default */
+  90:/opt/cross/avr/avr/include/util/delay.h **** # warning "F_CPU not defined for <util/delay.h>"
+  91:/opt/cross/avr/avr/include/util/delay.h **** # define F_CPU 1000000UL
+  92:/opt/cross/avr/avr/include/util/delay.h **** #endif
+  93:/opt/cross/avr/avr/include/util/delay.h **** 
+  94:/opt/cross/avr/avr/include/util/delay.h **** #ifndef __OPTIMIZE__
+  95:/opt/cross/avr/avr/include/util/delay.h **** # warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+  96:/opt/cross/avr/avr/include/util/delay.h **** #endif
+  97:/opt/cross/avr/avr/include/util/delay.h **** 
+  98:/opt/cross/avr/avr/include/util/delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+  99:/opt/cross/avr/avr/include/util/delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 100:/opt/cross/avr/avr/include/util/delay.h ****   __STDC_HOSTED__
+ 101:/opt/cross/avr/avr/include/util/delay.h **** #  include <math.h>
+ 102:/opt/cross/avr/avr/include/util/delay.h **** #endif
+ 103:/opt/cross/avr/avr/include/util/delay.h **** 
+ 104:/opt/cross/avr/avr/include/util/delay.h **** /**
+ 105:/opt/cross/avr/avr/include/util/delay.h ****    \ingroup util_delay
+ 106:/opt/cross/avr/avr/include/util/delay.h **** 
+ 107:/opt/cross/avr/avr/include/util/delay.h ****    Perform a delay of \c __ms milliseconds, using _delay_loop_2().
+ 108:/opt/cross/avr/avr/include/util/delay.h **** 
+ 109:/opt/cross/avr/avr/include/util/delay.h ****    The macro F_CPU is supposed to be defined to a
+ 110:/opt/cross/avr/avr/include/util/delay.h ****    constant defining the CPU clock frequency (in Hertz).
+ 111:/opt/cross/avr/avr/include/util/delay.h **** 
+ 112:/opt/cross/avr/avr/include/util/delay.h ****    The maximal possible delay is 262.14 ms / F_CPU in MHz.
+ 113:/opt/cross/avr/avr/include/util/delay.h **** 
+ 114:/opt/cross/avr/avr/include/util/delay.h ****    When the user request delay which exceed the maximum possible one,
+ 115:/opt/cross/avr/avr/include/util/delay.h ****    _delay_ms() provides a decreased resolution functionality. In this
+ 116:/opt/cross/avr/avr/include/util/delay.h ****    mode _delay_ms() will work with a resolution of 1/10 ms, providing
+ 117:/opt/cross/avr/avr/include/util/delay.h ****    delays up to 6.5535 seconds (independent from CPU frequency).  The
+ 118:/opt/cross/avr/avr/include/util/delay.h ****    user will not be informed about decreased resolution.
+ 119:/opt/cross/avr/avr/include/util/delay.h **** 
+ 120:/opt/cross/avr/avr/include/util/delay.h ****    If the avr-gcc toolchain has __builtin_avr_delay_cycles(unsigned long)
+ 121:/opt/cross/avr/avr/include/util/delay.h ****    support, maximal possible delay is 4294967.295 ms/ F_CPU in MHz. For
+ 122:/opt/cross/avr/avr/include/util/delay.h ****    values greater than the maximal possible delay, overflows results in
+ 123:/opt/cross/avr/avr/include/util/delay.h ****    no delay i.e., 0ms.
+ 124:/opt/cross/avr/avr/include/util/delay.h **** 
+ 125:/opt/cross/avr/avr/include/util/delay.h ****    Conversion of __us into clock cycles may not always result in integer.
+ 126:/opt/cross/avr/avr/include/util/delay.h ****    By default, the clock cycles rounded up to next integer. This ensures that
+ 127:/opt/cross/avr/avr/include/util/delay.h ****    the user gets atleast __us microseconds of delay.
+ 128:/opt/cross/avr/avr/include/util/delay.h **** 
+ 129:/opt/cross/avr/avr/include/util/delay.h ****    Alternatively, user can define __DELAY_ROUND_DOWN__ and __DELAY_ROUND_CLOSEST__
+ 130:/opt/cross/avr/avr/include/util/delay.h ****    to round down and round to closest integer.
+ 131:/opt/cross/avr/avr/include/util/delay.h **** 
+ 132:/opt/cross/avr/avr/include/util/delay.h ****    Note: The new implementation of _delay_ms(double __ms) with 
+ 133:/opt/cross/avr/avr/include/util/delay.h ****     __builtin_avr_delay_cycles(unsigned long) support is not backward compatible. 
+ 134:/opt/cross/avr/avr/include/util/delay.h ****    User can define __DELAY_BACKWARD_COMPATIBLE__ to get a backward compatible delay.
+ 135:/opt/cross/avr/avr/include/util/delay.h ****    Also, the backward compatible
+ 136:/opt/cross/avr/avr/include/util/delay.h ****    algorithm will be chosen if the code is compiled in a <em>freestanding
+ 137:/opt/cross/avr/avr/include/util/delay.h ****    environment</em> (GCC option \c -ffreestanding), as the math functions
+ 138:/opt/cross/avr/avr/include/util/delay.h ****    required for rounding are not available to the compiler then.
+ 139:/opt/cross/avr/avr/include/util/delay.h **** 
+ 140:/opt/cross/avr/avr/include/util/delay.h ****  */
+ 141:/opt/cross/avr/avr/include/util/delay.h **** void
+ 142:/opt/cross/avr/avr/include/util/delay.h **** _delay_ms(double __ms)
+ 143:/opt/cross/avr/avr/include/util/delay.h **** {
+ 144:/opt/cross/avr/avr/include/util/delay.h **** 	double __tmp ; 
+ 145:/opt/cross/avr/avr/include/util/delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+ 146:/opt/cross/avr/avr/include/util/delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 147:/opt/cross/avr/avr/include/util/delay.h ****   __STDC_HOSTED__
+ 148:/opt/cross/avr/avr/include/util/delay.h **** 	uint32_t __ticks_dc;
+ 149:/opt/cross/avr/avr/include/util/delay.h **** 	extern void __builtin_avr_delay_cycles(unsigned long);
+ 150:/opt/cross/avr/avr/include/util/delay.h **** 	__tmp = ((F_CPU) / 1e3) * __ms;
+ 151:/opt/cross/avr/avr/include/util/delay.h **** 
+ 152:/opt/cross/avr/avr/include/util/delay.h **** 	#if defined(__DELAY_ROUND_DOWN__)
+ 153:/opt/cross/avr/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)fabs(__tmp);
+ 154:/opt/cross/avr/avr/include/util/delay.h **** 
+ 155:/opt/cross/avr/avr/include/util/delay.h **** 	#elif defined(__DELAY_ROUND_CLOSEST__)
+ 156:/opt/cross/avr/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)(fabs(__tmp)+0.5);
+ 157:/opt/cross/avr/avr/include/util/delay.h **** 
+ 158:/opt/cross/avr/avr/include/util/delay.h **** 	#else
+ 159:/opt/cross/avr/avr/include/util/delay.h **** 		//round up by default
+ 160:/opt/cross/avr/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+ 161:/opt/cross/avr/avr/include/util/delay.h **** 	#endif
+ 162:/opt/cross/avr/avr/include/util/delay.h **** 
+ 163:/opt/cross/avr/avr/include/util/delay.h **** 	__builtin_avr_delay_cycles(__ticks_dc);
+  64               		.loc 2 163 0
+  65 0006 EFE2      		ldi r30,lo8(29999)
+  66 0008 F5E7      		ldi r31,hi8(29999)
+  67 000a 3197      		1: sbiw r30,1
+  68 000c 01F4      		brne 1b
+  69 000e 00C0      		rjmp .
+  70 0010 0000      		nop
+  71               	.LBE17:
+  72               	.LBE16:
+  40:tipjar.c      **** 		PORTB set(IRLED);		// switch on IR LEDs
+  73               		.loc 1 40 0
+  74 0012 C49A      		sbi 0x18,4
+  75               	.LVL3:
+  76               	.LBB18:
+  77               	.LBB19:
+  78               		.loc 2 163 0
+  79 0014 EFE9      		ldi r30,lo8(3999)
+  80 0016 FFE0      		ldi r31,hi8(3999)
+  81 0018 3197      		1: sbiw r30,1
+  82 001a 01F4      		brne 1b
+  83 001c 00C0      		rjmp .
+  84 001e 0000      		nop
+  85               	.LBE19:
+  86               	.LBE18:
+  42:tipjar.c      **** 		pintr = ! (PINB & (1<<PHOTR));	// read the photo interrupter
+  87               		.loc 1 42 0
+  88 0020 26B3      		in r18,0x16
+  89               	.LVL4:
+  43:tipjar.c      **** 		PORTB clr(IRLED);		// switch off IR LEDs
+  90               		.loc 1 43 0
+  91 0022 C498      		cbi 0x18,4
+  44:tipjar.c      **** 		if (pintr) {
+  92               		.loc 1 44 0
+  93 0024 23FD      		sbrc r18,3
+  94 0026 00C0      		rjmp .L4
+  45:tipjar.c      **** 			++sound;
+  95               		.loc 1 45 0
+  96 0028 0196      		adiw r24,1
+  97               	.LVL5:
+  46:tipjar.c      **** 			if ( sound >= 4 ) {	// long sound sample
+  98               		.loc 1 46 0
+  99 002a 8430      		cpi r24,4
+ 100 002c 9105      		cpc r25,__zero_reg__
+ 101 002e 04F0      		brlt .L5
+ 102               	.LVL6:
+  48:tipjar.c      **** 				PORTB set(SND1);
+ 103               		.loc 1 48 0
+ 104 0030 C09A      		sbi 0x18,0
+ 105               	.LVL7:
+ 106               	.LBB20:
+ 107               	.LBB21:
+ 108               		.loc 2 163 0
+ 109 0032 FFEF      		ldi r31,lo8(159999)
+ 110 0034 20E7      		ldi r18,hi8(159999)
+ 111 0036 82E0      		ldi r24,hlo8(159999)
+ 112 0038 F150      		1: subi r31,1
+ 113 003a 2040      		sbci r18,0
+ 114 003c 8040      		sbci r24,0
+ 115 003e 01F4      		brne 1b
+ 116               	.LVL8:
+ 117 0040 00C0      		rjmp .
+ 118 0042 0000      		nop
+ 119               	.LBE21:
+ 120               	.LBE20:
+  50:tipjar.c      **** 				PORTB clr(SND1);
+ 121               		.loc 1 50 0
+ 122 0044 C098      		cbi 0x18,0
+ 123               	.LVL9:
+ 124               	.LBB22:
+ 125               	.LBB23:
+ 126               		.loc 2 163 0
+ 127 0046 9FEF      		ldi r25,lo8(6399999)
+ 128 0048 E7EA      		ldi r30,hi8(6399999)
+ 129 004a F1E6      		ldi r31,hlo8(6399999)
+ 130 004c 9150      		1: subi r25,1
+ 131 004e E040      		sbci r30,0
+ 132 0050 F040      		sbci r31,0
+ 133 0052 01F4      		brne 1b
+ 134 0054 00C0      		rjmp .
+ 135 0056 0000      		nop
+ 136 0058 00C0      		rjmp .L6
+ 137               	.LVL10:
+ 138               	.L4:
+ 139               	.LBE23:
+ 140               	.LBE22:
+  54:tipjar.c      **** 		else if (sound) {		// short sound sample
+ 141               		.loc 1 54 0
+ 142 005a 892B      		or r24,r25
+ 143 005c 01F0      		breq .L6
+ 144               	.LVL11:
+  56:tipjar.c      **** 			PORTB set(SND1);
+ 145               		.loc 1 56 0
+ 146 005e C09A      		sbi 0x18,0
+ 147               	.LVL12:
+ 148               	.LBB24:
+ 149               	.LBB25:
+ 150               		.loc 2 163 0
+ 151 0060 2FEF      		ldi r18,lo8(159999)
+ 152 0062 80E7      		ldi r24,hi8(159999)
+ 153 0064 92E0      		ldi r25,hlo8(159999)
+ 154 0066 2150      		1: subi r18,1
+ 155 0068 8040      		sbci r24,0
+ 156 006a 9040      		sbci r25,0
+ 157 006c 01F4      		brne 1b
+ 158               	.LVL13:
+ 159 006e 00C0      		rjmp .
+ 160 0070 0000      		nop
+ 161               	.LBE25:
+ 162               	.LBE24:
+  58:tipjar.c      **** 			PORTB clr(SND1);
+ 163               		.loc 1 58 0
+ 164 0072 C098      		cbi 0x18,0
+ 165               	.LVL14:
+ 166               	.LBB26:
+ 167               	.LBB27:
+ 168               		.loc 2 163 0
+ 169 0074 EFEF      		ldi r30,lo8(1759999)
+ 170 0076 FAED      		ldi r31,hi8(1759999)
+ 171 0078 2AE1      		ldi r18,hlo8(1759999)
+ 172 007a E150      		1: subi r30,1
+ 173 007c F040      		sbci r31,0
+ 174 007e 2040      		sbci r18,0
+ 175 0080 01F4      		brne 1b
+ 176 0082 00C0      		rjmp .
+ 177 0084 0000      		nop
+ 178               	.LBE27:
+ 179               	.LBE26:
+  60:tipjar.c      **** 			PORTB set(SND1);
+ 180               		.loc 1 60 0
+ 181 0086 C09A      		sbi 0x18,0
+ 182               	.LVL15:
+ 183               	.LBB28:
+ 184               	.LBB29:
+ 185               		.loc 2 163 0
+ 186 0088 8FEF      		ldi r24,lo8(159999)
+ 187 008a 90E7      		ldi r25,hi8(159999)
+ 188 008c E2E0      		ldi r30,hlo8(159999)
+ 189 008e 8150      		1: subi r24,1
+ 190 0090 9040      		sbci r25,0
+ 191 0092 E040      		sbci r30,0
+ 192 0094 01F4      		brne 1b
+ 193 0096 00C0      		rjmp .
+ 194 0098 0000      		nop
+ 195               	.LBE29:
+ 196               	.LBE28:
+  62:tipjar.c      **** 			PORTB clr(SND1);
+ 197               		.loc 1 62 0
+ 198 009a C098      		cbi 0x18,0
+ 199 009c 00C0      		rjmp .L6
+ 200               	.LVL16:
+ 201               	.L5:
+  64:tipjar.c      **** 		if (sound) PORTB clr(LED); else PORTB set(LED);
+ 202               		.loc 1 64 0
+ 203 009e C298      		cbi 0x18,2
+ 204 00a0 00C0      		rjmp .L3
+ 205               	.LVL17:
+ 206               	.L6:
+ 207 00a2 C29A      		sbi 0x18,2
+ 208 00a4 00C0      		rjmp .L11
+ 209               		.cfi_endproc
+ 210               	.LFE6:
+ 212               		.text
+ 213               	.Letext0:
+ 214               		.file 3 "/opt/cross/avr/avr/include/stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 tipjar.c
+     /tmp/cc8jvolG.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/cc8jvolG.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/cc8jvolG.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/cc8jvolG.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/cc8jvolG.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/cc8jvolG.s:12     .text:0000000000000000 init
+     /tmp/cc8jvolG.s:43     .text.startup:0000000000000000 main
+
+NO UNDEFINED SYMBOLS
