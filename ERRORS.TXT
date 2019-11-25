@@ -1,0 +1,5 @@
+DESIGN ERRORS
+=============
+
+* all 6 MMBT2222A have their Emitter and Base swapped (wrong footprint)
+* R4 smaller or/and C6 smaller (1/3 the time constant)

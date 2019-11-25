@@ -1,0 +1,21 @@
+# gitignore file for tipjar
+/CR2032*
+/docs
+/gerber
+/SOD-28*
+*.pdf
+!tipjar.pdf
+*bak
+*bck
+*.lib
+!*cache.lib
+*.dcm
+*.d
+*.eep
+*.elf
+*.hex
+*.lss
+*.lst
+*.map
+*.o
+*.sym

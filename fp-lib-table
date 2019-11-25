@@ -1,0 +1,5 @@
+(fp_lib_table
+  (lib (name Microcontrollers_ATTINY85-20SU)(type Legacy)(uri /home/vic/kicad/library/Microcontrollers_ATTINY85-20SU.mod)(options "")(descr ""))
+  (lib (name on1120)(type KiCad)(uri /home/vic/kicad/library/on1120.pretty)(options "")(descr ""))
+  (lib (name CR2032)(type KiCad)(uri /home/vic/projects/TipJar/CR2032.pretty)(options "")(descr ""))
+)
