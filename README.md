@@ -25,7 +25,7 @@ Depending on which mode you prefer you can omit some of the components on the PC
 * first option: R7, D2, L2, C5, L1, C3, P2
 * second option: BT1, D3, D4, R8, R10, Q3, Q6, P4, P5
 
-There is various options powering the circuit:
+There are various options powering the circuit:
 
 * LiPo battery with micro USB power supply as charger
 * 5V micro USB power supply only
@@ -39,7 +39,7 @@ Warning: the PN2222A SOT23 footprint of the current PCB has base and emitter swa
 
 # SOFTWARE
 
-Currently there is a simplistic c program in the repository that switches on the optointerrupters for 1 ms every 10 ms (10% duty cycle saves power) to see if one of them is interrupted by an object. if so, it counts the cycles while the object occludes the detector. If 8 cycles have passed before the detector sees light again a banknote is assumed to have passed the detector. Oterwise the object detected is assumed to have been a coin.
+Currently there is a simplistic C program in the repository that switches on the optointerrupters for 1 ms every 10 ms (10% duty cycle saves power) to see if one of them is interrupted by an object. if so, it counts the cycles while the object occludes the detector. If 8 cycles have passed before the detector sees light again a banknote is assumed to have passed the detector. Oterwise the object detected is assumed to have been a coin.
 
 # BUILD
 
