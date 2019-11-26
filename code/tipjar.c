@@ -62,16 +62,18 @@ void main(void) {
 			++sound;
 			if ( sound >= 8 ) {	// long sample
 				sound=0;
+				PORTB clr(SND1);
+				_delay_ms(1);
 				PORTB set(SND1);
 				_delay_ms(1000);
-				PORTB clr(SND1);
 			}
 		}
 		else if (sound) {		// short sample
 			sound=0;
-			PORTB set(SND2);
-			_delay_ms(500);
 			PORTB clr(SND2);
+			_delay_ms(1);
+			PORTB set(SND2);
+			_delay_ms(1000);
 		}
 	}
 }
@@ -88,4 +90,7 @@ void init(void) {
 
 	CLKPR = (1 << CLKPCE);	// enable clock prescaler update
 	CLKPR = 0;		// set clock to maximum (= crystal/RC oscillator)
+	
+	PORTB set(SND1);	// set sound module inputs to LOW
+	PORTB set(SND2);
 }
