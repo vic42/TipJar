@@ -37,10 +37,9 @@ int is_interrupted(void)	// return 1 if photointerrupter dark
 {
 	int pintr;
 	
-	PORTB set(PWRLED);
 	PORTB set(IRLED);		// switch on IR LEDs
 	_delay_ms(1);			// wait for IR to settle
-	pintr = ! (PINB & (1<<PHOTR));	// read the photo interrupter
+	pintr = !(PINB & (1<<PHOTR));	// read the photo interrupter
 	PORTB clr(IRLED);		// switch off IR LEDs (save power)
 	return pintr;
 }
@@ -51,28 +50,29 @@ void main(void) {
 	init();
 
 	for(;;) {				// endless loop
-		PORTB set(PB0);
+		PORTB set(PB0);			// hold power, LED off
 		_delay_ms(8);			// defines the PWM off-time for the power LED
 		PORTB clr(PB0);
 		_delay_ms(1);			// defines the PWM on-time for the power LED
 		while(!(PINB & (1<<PHOTR))) {	// read the off switch
 			PORTB clr(PWROFF);	// switch OFF
+			_delay_ms(1);
 		}
 		if (is_interrupted()) {
 			++sound;
 			if ( sound >= 8 ) {	// long sample
 				sound=0;
-				PORTB clr(SND1);
-				_delay_ms(1);
 				PORTB set(SND1);
+				_delay_ms(1);
+				PORTB clr(SND1);
 				_delay_ms(1000);
 			}
 		}
 		else if (sound) {		// short sample
 			sound=0;
-			PORTB clr(SND2);
-			_delay_ms(1);
 			PORTB set(SND2);
+			_delay_ms(1);
+			PORTB clr(SND2);
 			_delay_ms(1000);
 		}
 	}
@@ -86,11 +86,11 @@ void init(void) {
 	DDRB set(IRLED);	// infrared sensor LEDs OUTPUT
 	DDRB clr(PHOTR);	// phototransistor INPUT
 	PORTB set(PHOTR);	// enable pullup resistor
-	PORTB set(PWRLED);	// hold power, message LED off
 
 	CLKPR = (1 << CLKPCE);	// enable clock prescaler update
 	CLKPR = 0;		// set clock to maximum (= crystal/RC oscillator)
 	
+	PORTB set(PWRLED);	// self-hold power switch (LED=off)
 	PORTB set(SND1);	// set sound module inputs to LOW
 	PORTB set(SND2);
 }
