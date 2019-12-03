@@ -3,24 +3,7 @@ DESIGN ERRORS
 
 * all 6 MMBT2222A have their Emitter and Base swapped (wrong footprint)
 * R4 smaller or/and C6 smaller (1/3 the time constant) -> R4=100k, R6=100k
+* -> R5 = 1k to avoid self-start
 * 4.7 uF cap in parallel to battery missing
 * pull-up resistors for sound modules
 * put the two opto transitors in series
-* low voltage battery disconnect @3V not properly defined (software to measure VCC) [1]
-
-
-
-[1]
-long readVcc() {
-  // Read 1.1V reference against AVcc
-  // set the reference to Vcc and the measurement to the internal 1.1V reference
-  ADMUX = _BV(MUX3) | _BV(MUX2);
-  delay(2); // Wait for Vref to settle
-  ADCSRA |= _BV(ADSC); // Start conversion
-  while (bit_is_set(ADCSRA,ADSC)); // measuring
-
-  result=ADC;
-
-  result = 1126400L / result; // Calculate Vcc (in mV); 1126400 = 1.1*1024*1000
-  return result; // Vcc in millivolts
-}

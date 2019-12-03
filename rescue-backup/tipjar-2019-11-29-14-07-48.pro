@@ -1,4 +1,4 @@
-update=Fri 29 Nov 2019 02:07:52 PM CET
+update=Mon 11 Feb 2019 02:57:39 PM CET
 version=1
 last_client=kicad
 [cvpcb]
@@ -48,3 +48,34 @@ version=1
 [eeschema]
 version=1
 LibDir=
+[eeschema/libraries]
+LibName1=tipjar-rescue
+LibName2=power
+LibName3=device
+LibName4=transistors
+LibName5=conn
+LibName6=linear
+LibName7=regul
+LibName8=74xx
+LibName9=cmos4000
+LibName10=adc-dac
+LibName11=memory
+LibName12=xilinx
+LibName13=dsp
+LibName14=analog_switches
+LibName15=motorola
+LibName16=texas
+LibName17=intel
+LibName18=audio
+LibName19=interface
+LibName20=digital-audio
+LibName21=philips
+LibName22=display
+LibName23=cypress
+LibName24=siliconi
+LibName25=contrib
+LibName26=valves
+LibName27=PHOTO_TRANSISTOR
+LibName28=atmel
+LibName29=mcp73831t-2aci-ot
+LibName30=/home/vic/projects/TipJar/opto

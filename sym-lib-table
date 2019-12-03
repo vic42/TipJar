@@ -1,0 +1,7 @@
+(sym_lib_table
+  (lib (name tipjar-rescue)(type Legacy)(uri ${KIPRJMOD}/tipjar-rescue.lib)(options "")(descr ""))
+  (lib (name PHOTO_TRANSISTOR)(type Legacy)(uri ${KIPRJMOD}/PHOTO_TRANSISTOR.lib)(options "")(descr ""))
+  (lib (name atmel)(type Legacy)(uri ${KIPRJMOD}/atmel.lib)(options "")(descr ""))
+  (lib (name mcp73831t-2aci-ot)(type Legacy)(uri ${KIPRJMOD}/mcp73831t-2aci-ot.lib)(options "")(descr ""))
+  (lib (name opto)(type Legacy)(uri /home/vic/projects/TipJar/opto.lib)(options "")(descr ""))
+)

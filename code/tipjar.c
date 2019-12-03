@@ -44,20 +44,36 @@ int is_interrupted(void)	// return 1 if photointerrupter dark
 	return pintr;
 }
 
+int vcc_low(void)			// return 0 if VCC OK, != 0 if VCC low
+{
+	volatile long result;
+	
+	ADCSRA |= _BV(ADSC);			// Start conversion
+	loop_until_bit_is_set(ADCSRA,ADSC);	// measuring
+	result = ADC;
+	result = 1126400L / result;		// Calculate Vcc (in mV); 1126400 = 1.1*1024*1000
+	return (result < 3100L);		// Vcc < 3.1V
+}
+
 void main(void) {
 	int sound=0;
 	
 	init();
 
 	for(;;) {				// endless loop
-		PORTB set(PB0);			// hold power, LED off
+		PORTB set(PWRLED);			// hold power, LED off
 		_delay_ms(8);			// defines the PWM off-time for the power LED
-		PORTB clr(PB0);
+		PORTB clr(PWRLED);
 		_delay_ms(1);			// defines the PWM on-time for the power LED
-		while(!(PINB & (1<<PHOTR))) {	// read the off switch
-			PORTB clr(PWROFF);	// switch OFF
-			_delay_ms(1);
+
+		/* power off if switch pressed or low voltage */
+		if ( !(PINB & (1<<PWROFF)) || vcc_low() ) {	// read the off switch and VCC
+			PORTB set(IRLED);
+			PORTB clr(PWRLED);	// switch power hold off (LED on)
+			for(;;);		// halt
 		}
+
+		/* read photo interrupters */
 		if (is_interrupted()) {
 			++sound;
 			if ( sound >= 8 ) {	// long sample
@@ -90,7 +106,15 @@ void init(void) {
 	CLKPR = (1 << CLKPCE);	// enable clock prescaler update
 	CLKPR = 0;		// set clock to maximum (= crystal/RC oscillator)
 	
+	PORTB clr(PWRLED);	// LED=on
+	_delay_ms(700);		// avoid self-switch-on
 	PORTB set(PWRLED);	// self-hold power switch (LED=off)
 	PORTB set(SND1);	// set sound module inputs to LOW
 	PORTB set(SND2);
+	
+	ADCSRA = _BV(ADEN);			// enable ADC
+	ADMUX = _BV(MUX3) | _BV(MUX2);		// set ADC reference to Vcc and input internal 1.1V reference
+	_delay_ms(1);				// wait for reference to settle
+	ADCSRA |= _BV(ADSC);			// Start dummy ADC conversion
+	loop_until_bit_is_set(ADCSRA,ADSC);	// measuring
 }
