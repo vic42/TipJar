@@ -61,7 +61,7 @@ void main(void) {
 	init();
 
 	for(;;) {				// endless loop
-		PORTB set(PWRLED);			// hold power, LED off
+		PORTB set(PWRLED);		// hold power, LED off
 		_delay_ms(8);			// defines the PWM off-time for the power LED
 		PORTB clr(PWRLED);
 		_delay_ms(1);			// defines the PWM on-time for the power LED
@@ -76,8 +76,9 @@ void main(void) {
 		/* read photo interrupters */
 		if (is_interrupted()) {
 			++sound;
-			if ( sound >= 8 ) {	// long sample
+			if ( sound >= 8 ) 	{	// long sample
 				sound=0;
+				PORTB set(PWRLED);	// hold power, LED off
 				PORTB set(SND1);
 				_delay_ms(1);
 				PORTB clr(SND1);
@@ -86,6 +87,7 @@ void main(void) {
 		}
 		else if (sound) {		// short sample
 			sound=0;
+			PORTB set(PWRLED);	// hold power, LED off
 			PORTB set(SND2);
 			_delay_ms(1);
 			PORTB clr(SND2);
