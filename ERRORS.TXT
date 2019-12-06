@@ -3,7 +3,7 @@ DESIGN ERRORS
 
 * all 6 MMBT2222A have their Emitter and Base swapped (wrong footprint)
 * R4 smaller or/and C6 smaller (1/3 the time constant) -> R4=100k, R6=100k
-* -> R5 = 1k to avoid self-start
 * 4.7 uF cap in parallel to battery missing
 * pull-up resistors for sound modules
 * put the two opto transitors in series
+* protective schottky from PB4 to VCC

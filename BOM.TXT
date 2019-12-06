@@ -1,0 +1,20 @@
+TipJar Project BOM
+==================
+
+PCB                  5.00 €
+ATTINY85             1.50 €
+MIC5504              0.15 €
+MCP73831             0.50 €
+TSM2301 (2 pcs)      1.00 €
+TSM2302              0.30 €
+MMBT2222 (6 pcs)     0.60 €
+ON1120 (2pcs)        3.00 €
+PMEG6030 (3 pcs)     1.50 €
+CR2032 Holder        0.50 €
+Sound ISD1820 (2x)   4.00 €
+Inductors (2 pcs)    2.00 €
+Lipo Battery         3.50 €
+Other Parts          5.00 €
+---------------------------
+SUM                 28.05 €
+
